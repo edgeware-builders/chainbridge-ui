@@ -49,11 +49,12 @@ Check Metamask to make sure you've received your balances on both chains.
 
 ---
 
-Download and install the chainbridge CLI:
+Download and install the chainbridge CLI. Note that we are working off commit hash `5bd78d4`, which has support for customizing decimals in bridged contracts:
 
 ```
-git clone -b v1.0.0 --depth 1 https://github.com/ChainSafe/chainbridge-deploy \
+git clone https://github.com/ChainSafe/chainbridge-deploy \
 && cd chainbridge-deploy/cb-sol-cli \
+&& git checkout 5bd78d4 \
 && npm install \
 && make install
 ```
@@ -72,7 +73,7 @@ export DST_GATEWAY=http://beresheet1.edgewa.re:9933
 
 You will also need to set up each token being bridged over from
 Polygon to Edgeware separately. As an example, the token address for
-USDC on Polygon is 0x2791bca1f2de4661ed88a30c99a7a9449aa84174.
+USDC on Polygon is 0x2791bca1f2de4661ed88a30c99a7a9449aa84174
 
 The resource ID can be any unique hex identifier, with the last 31 bytes
 available
@@ -102,18 +103,21 @@ export SRC_HANDLER=<Erc20 Handler address>
 Register the asset we are bridging over:
 
 ```
-cb-sol-cli --url $SRC_GATEWAY --privateKey $SRC_PK --gasPrice 10000000000 bridge register-resource \
+cb-sol-cli --url $SRC_GATEWAY --privateKey $SRC_PK \
+    --gasPrice 10000000000 \
+    bridge register-resource \
     --bridge $SRC_BRIDGE \
     --handler $SRC_HANDLER \
     --resourceId $RESOURCE_ID \
     --targetContract $SRC_TOKEN
 ```
 
-Deploy contracts on the destination side:
+Deploy the bridged USDC contracts on the destination side.
+Note that this is done with 6 decimal points:
 
 ```
 cb-sol-cli --url $DST_GATEWAY --privateKey $DST_PK --gasPrice 10000000000 deploy\
-    --bridge --erc20 6 --erc20Handler \
+    --bridge --erc20 --erc20Decimals 6 --erc20Handler \
     --relayers $DST_ADDR \
     --relayerThreshold 1 \
     --chainId 1
@@ -198,7 +202,7 @@ echo "{
       }
     }
   ]
-}" >> config.json
+}" > config.json
 ```
 
 Set up the relayer's keystore with private keys. You will be asked
