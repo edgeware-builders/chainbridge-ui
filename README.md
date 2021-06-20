@@ -271,13 +271,24 @@ And for the destination chain:
   - imageUri: USDCIcon
   - resourceId: \$RESOURCE_ID
 
-Once this is done, you can create and run the chainbridge UI:
+Once this is done, you can create and run the chainbridge UI.
 
 ```
 yarn start
 ```
 
-You may need to go to a DEX to obtain some USDC:
+We recommend doing so with a few added variables in .env. Go to
+https://explorer.blocknative.com/account and create a blocknative account.
+This will allow the bridge to watch for mempool transactions from the
+provided RPC node (e.g. Polygon and Beresheet):
+
+```
+REACT_APP_BLOCKNATIVE_DAPP_ID=[Your Blocknative API key]
+REACT_APP_SUPPORT_SERVICE=Discord
+REACT_APP_SUPPORT_URL=[A link to the Discord or Telegram channel for support]
+```
+
+To swap, you may need to go to a DEX to obtain some USDC:
 
 - https://app.sushi.com/swap
 - https://quickswap.exchange/#/swap
@@ -291,6 +302,6 @@ To build the chainbridge UI:
 yarn build
 ```
 
-We recommend using Vercel to automatically build the chainbridge UI
-whenever a new version is pushed to `main`. See the Vercel docs for
-details: https://vercel.com/docs/platform/deployments
+Finally, we recommend using Vercel to automatically build the
+chainbridge UI whenever a new version is pushed to `main`. See the
+Vercel docs for details: https://vercel.com/docs/platform/deployments
