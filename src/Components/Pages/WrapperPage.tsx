@@ -450,11 +450,13 @@ const MainPage = () => {
               />
             </section>
           </section>
+          {/*
           <section className={classes.submitButtonArea}>
             <Button type="submit" fullsize variant="primary">
               {action === "wrap" ? "Wrap Token" : "Unwrap token"}
             </Button>
           </section>
+          */}
           <section>
             <QuestionCircleSvg
               onClick={() => setAboutOpen(true)}
