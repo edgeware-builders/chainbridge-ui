@@ -141,6 +141,9 @@ const NetworkManagerProvider = ({ children }: INetworkManagerProviderProps) => {
   );
 
   useEffect(() => {
+    if (chainbridgeConfig.chains.every((ch) => ch.type === "Ethereum")) {
+      setWalletType("Ethereum");
+    }
     if (walletType !== "unset") {
       if (walletType === "select") {
         setHomeChains(chainbridgeConfig.chains);

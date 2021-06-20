@@ -1,5 +1,4 @@
-import ETHIcon from "./media/tokens/eth.svg";
-// import WETHIcon from "./media/tokens/weth.svg";
+import USDCIcon from "./media/tokens/usdc.svg";
 
 export type TokenConfig = {
   address: string;
@@ -46,24 +45,21 @@ export type ChainbridgeConfig = {
 };
 
 export const chainbridgeConfig: ChainbridgeConfig = {
-  // Local GETH <> Local Substrate
   chains: [
     {
       chainId: 0,
-      networkId: 5,
-      name: "Ethereum - Local",
+      networkId: 137,
+      name: "Polygon",
       decimals: 18,
-      bridgeAddress: "0x62877dDCd49aD22f5eDfc6ac108e9a4b5D2bD88B",
-      erc20HandlerAddress: "0x3167776db165D8eA0f51790CA2bbf44Db5105ADF",
+      bridgeAddress: "0x05df5B40D6806f4c9A933e77b390AD7Bd373aDd4",
+      erc20HandlerAddress: "0x1aD9dE2c6F91302489f3e6b562d844D05441C1B4",
       rpcUrl: "http://localhost:8545",
       type: "Ethereum",
       nativeTokenSymbol: "ETH",
       tokens: [
         {
-          address: "0x21605f71845f372A9ed84253d2D024B7B10999f4",
-          name: "TOKEN",
-          symbol: "TOKEN",
-          imageUri: ETHIcon,
+          address: "0x2791bca1f2de4661ed88a30c99a7a9449aa84174",
+          imageUri: USDCIcon,
           resourceId:
             "0x000000000000000000000000000000c76ebe4a02bbc34786d860b355f5a5ce00",
         },
@@ -71,22 +67,20 @@ export const chainbridgeConfig: ChainbridgeConfig = {
     },
     {
       chainId: 1,
-      networkId: 2,
-      name: "Substrate - Local",
+      networkId: 2021,
+      name: "Beresheet",
       decimals: 18,
-      rpcUrl: "ws://localhost:9944",
-      type: "Substrate",
-      nativeTokenSymbol: "DOT",
-      chainbridgePalletName: "chainBridge",
-      transferPalletName: "example",
-      transferFunctionName: "transferNative",
-      typesFileName: "bridgeTypes.json",
+      bridgeAddress: "0x05df5B40D6806f4c9A933e77b390AD7Bd373aDd4",
+      erc20HandlerAddress: "0x1aD9dE2c6F91302489f3e6b562d844D05441C1B4",
+      rpcUrl: "http://beresheet1.edgewa.re:9933",
+      type: "Ethereum",
+      nativeTokenSymbol: "testEDG",
       tokens: [
         {
-          address: "substrate-native",
-          name: "DOT",
-          symbol: "DOT",
-          resourceId: "substrate-native",
+          address: "0x468C224ADb7837fC41049fCFe812019A54d94c06",
+          imageUri: USDCIcon,
+          resourceId:
+            "0x000000000000000000000000000000c76ebe4a02bbc34786d860b355f5a5ce00",
         },
       ],
     },
