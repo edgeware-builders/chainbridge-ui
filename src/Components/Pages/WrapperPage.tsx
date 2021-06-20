@@ -1,13 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { makeStyles, createStyles, ITheme } from "@chainsafe/common-theme";
-import AboutDrawer from "../../Modules/AboutDrawer";
 import ChangeNetworkDrawer from "../../Modules/ChangeNetworkDrawer";
-import {
-  Button,
-  Typography,
-  QuestionCircleSvg,
-  SelectInput,
-} from "@chainsafe/common-components";
+import { Button, Typography, SelectInput } from "@chainsafe/common-components";
 import { Form, Formik } from "formik";
 import clsx from "clsx";
 import { useChainbridge } from "../../Contexts/ChainbridgeContext";
@@ -206,7 +200,6 @@ const MainPage = () => {
     address,
   } = useChainbridge();
 
-  const [aboutOpen, setAboutOpen] = useState<boolean>(false);
   const [walletConnecting, setWalletConnecting] = useState(false);
   const [changeNetworkOpen, setChangeNetworkOpen] = useState<boolean>(false);
   const [preflightModalOpen, setPreflightModalOpen] = useState<boolean>(false);
@@ -457,15 +450,8 @@ const MainPage = () => {
             </Button>
           </section>
           */}
-          <section>
-            <QuestionCircleSvg
-              onClick={() => setAboutOpen(true)}
-              className={classes.faqButton}
-            />
-          </section>
         </Form>
       </Formik>
-      <AboutDrawer open={aboutOpen} close={() => setAboutOpen(false)} />
       <ChangeNetworkDrawer
         open={changeNetworkOpen}
         close={() => setChangeNetworkOpen(false)}

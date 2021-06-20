@@ -4,7 +4,7 @@ import React from "react";
 import { ReactNode } from "react";
 import AppHeader from "./AppHeader";
 import { ReactComponent as GlobalSvg } from "../media/Icons/global.svg";
-import { ReactComponent as GiftSvg } from "../media/Icons/gift.svg";
+// import { ReactComponent as GiftSvg } from "../media/Icons/gift.svg";
 import { ROUTE_LINKS } from "../Components/Routes";
 interface IAppWrapper {
   children: ReactNode | ReactNode[];
