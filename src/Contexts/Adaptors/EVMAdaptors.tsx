@@ -45,8 +45,6 @@ export const EVMHomeAdaptorProvider = ({
 
   const getNetworkName = (id: any) => {
     switch (Number(id)) {
-      case 5:
-        return "Localhost";
       case 1:
         return "Mainnet";
       case 3:

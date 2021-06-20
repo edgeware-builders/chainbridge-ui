@@ -75,6 +75,7 @@ export const chainbridgeConfig: ChainbridgeConfig = {
       rpcUrl: "http://beresheet1.edgewa.re:9933",
       type: "Ethereum",
       nativeTokenSymbol: "testEDG",
+      defaultGasPrice: 1,
       tokens: [
         {
           address: "0xd63C798b612bD08Ec26aB019B52538016240f0F8",
