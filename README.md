@@ -1,117 +1,292 @@
 # Chainbridge UI
 
-## Table of Contents
+A Chainbridge UI for Edgeware, configured for bridging Polygon assets
+to Edgeware.
 
-- [Features](#features)
-- [Install](#install)
-- [Usage](#usage)
-- [Contributing](#contributing)
-<!-- - [License](#license) -->
+This document includes instructions for setting up an ERC20 asset
+bridge between Edgeware and Polygon. It is based on instructions at
+https://chainbridge.chainsafe.io/live-evm-bridge/ and code from
+https://github.com/ChainSafe/chainbridge-ui.
 
-## Features
+See also https://github.com/dtradeorg/edg-bridge, another implementation
+of an ETH to EDG bridge by the dTrade team.
 
-### Stack
+---
 
-- JS Framework: [React](https://github.com/facebook/react) + [Typescript](https://github.com/microsoft/TypeScript)
-- Blockchain components: [Ethers.js](https://github.com/ethers-io/ethers.js/) + [web3-context](https://github.com/chainsafe/web3-context)
-- Styling: [JSS](https://cssinjs.org/?v=v10.0.3) + [Chainsafe UI Styling](https://npmjs.com/packages/@chainsafe/common-theme/)
-- Forms & Validation: [Formik](https://jaredpalmer.com/formik) + [Yup](https://github.com/jquense/yup)
-- Notifications: [Chainsafe UI Components](https://npmjs.com/packages/@chainsafe/common-components/)
+## Funding your accounts
 
-## Install
+You will need a new Metamask account, connected to both Polygon and
+Edgeware. You should use a fresh account, as you'll be exporting the
+private key and providing it to the Chainbridge relayers in this
+tutorial. (Using an existing account risks your funds and to the bridge.)
+
+Add these networks to Metamask:
 
 ```
-yarn install
+Polygon
+https://rpc-mainnet.matic.network
+137
+MATIC
+https://polygonscan.com/
 ```
 
-Create a `.env` file based on the `.env.example` file in the root of the project.
-Get a Blocknative DAPP ID (here)[https://explorer.blocknative.com/account] and populate the respective field in the `.env` file
+```
+Beresheet
+http://beresheet1.edgewa.re:9933
+2022
+testEDG
+https://beresheet.edgscan.com/
+```
 
-## Usage
+Send some MATIC to the address from an exchange (a few MATIC is enough).
 
-### Development
+Go to https://edgewa.re/keygen and use the bottom tool to convert your
+EVM address into a mainnet address. Go to polkadot-js at
+https://polkadot.js.org/apps/?rpc=wss%3A%2F%2Fberesheet1.edgewa.re#/
+and send some EDG to that address (a few EDG is enough).
 
-For running a local instance use the command:
+Check Metamask to make sure you've received your balances on both chains.
+
+---
+
+Download and install the chainbridge CLI:
+
+```
+git clone -b v1.0.0 --depth 1 https://github.com/ChainSafe/chainbridge-deploy \
+&& cd chainbridge-deploy/cb-sol-cli \
+&& npm install \
+&& make install
+```
+
+You should set up some environment variables before proceeding.
+
+```
+export SRC_ADDR=<Your public key on Goerli>
+export SRC_PK=<Your private key on Goerli>
+export DST_ADDR=<Your public key on Rinkeby>
+export DST_PK=<Your private key on Rinkeby>
+
+export SRC_GATEWAY=https://rpc-mainnet.matic.network
+export DST_GATEWAY=http://beresheet1.edgewa.re:9933
+```
+
+You will also need to set up each token being bridged over from
+Polygon to Edgeware separately. As an example, the token address for
+USDC on Polygon is 0x2791bca1f2de4661ed88a30c99a7a9449aa84174.
+
+The resource ID can be any unique hex identifier, with the last 31 bytes
+available
+
+```
+export SRC_TOKEN=<Matic contract address of the asset to bridge>
+export RESOURCE_ID=0x000000000000000000000000000000c76ebe4a02bbc34786d860b355f5a5ce00
+```
+
+Deploy our chainbridge contracts on Polygon:
+
+```
+cb-sol-cli --url $SRC_GATEWAY --privateKey $SRC_PK --gasPrice 10000000000 deploy \
+    --bridge --erc20Handler \
+    --relayers $SRC_ADDR \
+    --relayerThreshold 1\
+    --chainId 0
+```
+
+Take note of the output of the above command, and assign them to the following variables:
+
+```
+export SRC_BRIDGE=<Bridge address>
+export SRC_HANDLER=<Erc20 Handler address>
+```
+
+Register the asset we are bridging over:
+
+```
+cb-sol-cli --url $SRC_GATEWAY --privateKey $SRC_PK --gasPrice 10000000000 bridge register-resource \
+    --bridge $SRC_BRIDGE \
+    --handler $SRC_HANDLER \
+    --resourceId $RESOURCE_ID \
+    --targetContract $SRC_TOKEN
+```
+
+Deploy contracts on the destination side:
+
+```
+cb-sol-cli --url $DST_GATEWAY --privateKey $DST_PK --gasPrice 10000000000 deploy\
+    --bridge --erc20 6 --erc20Handler \
+    --relayers $DST_ADDR \
+    --relayerThreshold 1 \
+    --chainId 1
+```
+
+Take note of the output of the above command and assign them to the following variables (for the Bridge, Erc20 handler, and bridged Erc20 asset address):
+
+```
+export DST_BRIDGE=<Dest bridge address>
+export DST_HANDLER=<Dest Erc20 Handler>
+export DST_TOKEN=<Dest Erc20 address>
+```
+
+Register the bridged contract on the bridge:
+
+```
+cb-sol-cli --url $DST_GATEWAY --privateKey $DST_PK --gasPrice 10000000000 bridge register-resource \
+    --bridge $DST_BRIDGE \
+    --handler $DST_HANDLER \
+    --resourceId $RESOURCE_ID \
+    --targetContract $DST_TOKEN
+```
+
+Configure the token as mintable/burnable:
+
+```
+cb-sol-cli --url $DST_GATEWAY --privateKey $DST_PK --gasPrice 10000000000 bridge set-burn \
+    --bridge $DST_BRIDGE \
+    --handler $DST_HANDLER \
+    --tokenContract $DST_TOKEN
+```
+
+Allow minting new bridged USDC:
+
+```
+cb-sol-cli --url $DST_GATEWAY --privateKey $DST_PK --gasPrice 10000000000 erc20 add-minter \
+    --minter $DST_HANDLER \
+    --erc20Address $DST_TOKEN
+```
+
+---
+
+At this point the bridge has been set up, and we should now set up relayers.
+
+```
+git clone -b v1.1.1 --depth 1 https://github.com/ChainSafe/chainbridge \
+&& cd chainbridge \
+&& make build
+```
+
+Configure the relayer:
+
+```
+echo "{
+  \"chains\": [
+    {
+      \"name\": \"Polygon\",
+      \"type\": \"ethereum\",
+      \"id\": \"0\",
+      \"endpoint\": \"wss://rpc-mainnet.matic.quiknode.pro\",
+      \"from\": \"$SRC_ADDR\",
+      \"opts\": {
+        \"bridge\": \"$SRC_BRIDGE\",
+        \"erc20Handler\": \"$SRC_HANDLER\",
+        \"genericHandler\": \"$SRC_HANDLER\",
+        \"gasLimit\": \"1000000\",
+        \"maxGasPrice\": \"10000000000\"
+      }
+    },
+    {
+      \"name\": \"Beresheet\",
+      \"type\": \"ethereum\",
+      \"id\": \"1\",
+      \"endpoint\": \"ws://beresheet1.edgewa.re:9944\",
+      \"from\": \"$DST_ADDR\",
+      \"opts\": {
+        \"bridge\": \"$DST_BRIDGE\",
+        \"erc20Handler\": \"$DST_HANDLER\",
+        \"genericHandler\": \"$DST_HANDLER\",
+        \"gasLimit\": \"1000000\",
+        \"maxGasPrice\": \"10000000000\"
+      }
+    }
+  ]
+}" >> config.json
+```
+
+Set up the relayer's keystore with private keys. You will be asked
+for a password, which you will have to re-enter when starting the
+relayer.
+
+```
+./build/chainbridge accounts import --privateKey $SRC_PK
+./build/chainbridge accounts import --privateKey $DST_PK
+```
+
+Start the relayer:
+
+```
+./build/chainbridge --config config.json --verbosity trace --latest
+```
+
+You may follow the instructions at
+https://chainbridge.chainsafe.io/live-evm-bridge/ to use the CLI
+interface to transfer tokens (note that you will need some Matic USDC
+for the instructions to work.
+
+Otherwise, continue to set up the chainbridge UI.
+
+---
+
+Setting up the Chainbridge UI:
+
+```
+git clone git@github.com:ChainSafe/chainbridge-ui.git
+cd chainbridge-ui
+yarn
+cp .env.example .env
+```
+
+Update the .env file
+Go to src/chainbridgeConfig.ts and update `chainbridgeConfig` to
+include these parameters. You will need to change the second
+default chain from a Substrate to an Ethereum chain:
+
+- chainId: 0
+- networkId: 137
+- name: Polygon
+- type: Ethereum
+- bridgeAddress: \$SRC_BRIDGE
+- erc20HandlerAddress: \$SRC_HANDLER
+- rpcUrl: https://rpc-mainnet.matic.network
+- nativeTokenSymbol: MATIC
+- tokens:
+  - address: \$SRC_TOKEN
+  - imageUri: USDCIcon
+  - resourceId: \$RESOURCE_ID
+
+And for the destination chain:
+
+- chainId: 1
+- networkId: 2022
+- name: Beresheet
+- type: Ethereum
+- bridgeAddress: \$DST_BRIDGE
+- erc20HandlerAddress: \$DST_HANDLER
+- rpcUrl: http://beresheet1.edgewa.re:9933
+- nativeTokenSymbol: testEDG
+- tokens:
+  - address: \$DST_TOKEN
+  - imageUri: USDCIcon
+  - resourceId: \$RESOURCE_ID
+
+Once this is done, you can create and run the chainbridge UI:
 
 ```
 yarn start
 ```
 
-The codebase is configured to be run against the Geth <> Substrate node that can be set up by following the guide [here](https://chainbridge.chainsafe.io/local/) or executing:
+You may need to go to a DEX to obtain some USDC:
 
-- `yarn start:substrate` to start,
-- `yarn setup:example` to initialize
+- https://app.sushi.com/swap
+- https://quickswap.exchange/#/swap
+- https://exchange.dfyn.network/
 
-Should the substrate chain you are targetting require different type definitions, the type definitions file should be added to `src/Contexts/Adaptors/SubstrateApis/` and the file name for the types set in the substrate bridge configs.
+You can now use Chainbridge to send funds to and from the bridge.
 
-### Build
-
-Update the configs for the bridge in `src/chainbridgeContext.ts`. There should be at least 2 chains configured for correct functioning of the bridge. Each chain accepts the following configuration parameters:
-
-```
-export type BridgeConfig = {
-  networkId?: number; // The networkId of this chain.
-  chainId: number; // The bridge's chainId.
-  name: string; // The human readable name of this chain.
-  rpcUrl: string; // An RPC URL for this chain.
-  type: ChainType; // The type of chain.
-  tokens: TokenConfig[]; // An object to configure the tokens (see below)
-  nativeTokenSymbol: string; // The native token symbol of this chain.
-  decimals: number;
-};
-```
+To build the chainbridge UI:
 
 ```
-type TokenConfig = {
-  address: string; // The address of the ERC20 token
-  name?: string; // The name of the ERC20 token. This can be left out if the token implements the ERC20Detailed standard
-  symbol?: string; // The symbol of the ERC20 token. This can be left out if the token implements the ERC20Detailed standard
-  imageUri?: string; // A URL pointing to the token logo. Can be either locally or externally hosted.
-  resourceId: string; // The resourceId to be used when transferring tokens of this type.
-  isNativeWrappedToken?: boolean // Flag to indicate that this is a wrapped native token (eg wETH on Ethereum). If this flag is not set for any of the tokens provided for this chain, wrapping functionality will be unavailable on that network.
-};
+yarn build
 ```
 
-EVM Chains should additionally be configured with the following params
-
-```
-export type EvmBridgeConfig = BridgeConfig & {
-  bridgeAddress: string;
-  erc20HandlerAddress: string;
-  type: "Ethereum";
-  nativeTokenSymbol: string;
-  // This should be the full path to display a tx hash, without the trailing slash, ie. https://etherscan.io/tx
-  blockExplorer?: string;
-  defaultGasPrice?: number;
-  deployedBlockNumber?: number;
-};
-```
-
-Substrate chains should be configured with the following
-
-```
-export type SubstrateBridgeConfig = BridgeConfig & {
-  type: "Substrate";
-  chainbridgePalletName: string; // The name of the chainbridge palette
-  transferPalletName: string; // The name of the pallet that should initiate transfers
-  transferFunctionName: string; // The name of the method to call to initiate a transfer
-  typesFileName: string; // The name of the Substrate types file. The file should be located in `src/Contexts/Adaptors/SubstrateApis`
-};
-```
-
-Run `yarn build`.
-
-Deploy the contents of the `/build` folder to any static website host (eg. S3, Azure storage) or IPFS.
-
-The project can also be built and deployed to Netlify, Render.com by configuring the Build command and Publish directory on the respective service.
-
-# ChainSafe Security Policy
-
-## Reporting a Security Bug
-
-We take all security issues seriously, if you believe you have found a security issue within a ChainSafe
-project please notify us immediately. If an issue is confirmed, we will take all necessary precautions
-to ensure a statement and patch release is made in a timely manner.
-
-Please email us a description of the flaw and any related information (e.g. reproduction steps, version) to
-[security at chainsafe dot io](mailto:security@chainsafe.io).
+We recommend using Vercel to automatically build the chainbridge UI
+whenever a new version is pushed to `main`. See the Vercel docs for
+details: https://vercel.com/docs/platform/deployments
