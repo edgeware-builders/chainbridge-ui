@@ -53,14 +53,18 @@ export const EVMHomeAdaptorProvider = ({
         return "Ropsten";
       case 4:
         return "Rinkeby";
-      // case 5:
-      //   return "Goerli";
+      case 5:
+        return "Goerli";
       case 6:
         return "Kotti";
       case 42:
         return "Kovan";
       case 61:
         return "Ethereum Classic - Mainnet";
+      case 2021:
+        return "Edgeware";
+      case 2022:
+        return "Beresheet";
       default:
         return "Other";
     }
