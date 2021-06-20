@@ -53,7 +53,7 @@ export const chainbridgeConfig: ChainbridgeConfig = {
       decimals: 18,
       bridgeAddress: "0x05df5B40D6806f4c9A933e77b390AD7Bd373aDd4",
       erc20HandlerAddress: "0x1aD9dE2c6F91302489f3e6b562d844D05441C1B4",
-      rpcUrl: "http://localhost:8545",
+      rpcUrl: "https://rpc-mainnet.matic.network",
       type: "Ethereum",
       nativeTokenSymbol: "ETH",
       tokens: [
@@ -70,14 +70,16 @@ export const chainbridgeConfig: ChainbridgeConfig = {
       networkId: 2022,
       name: "Beresheet",
       decimals: 18,
-      bridgeAddress: "0x05df5B40D6806f4c9A933e77b390AD7Bd373aDd4",
-      erc20HandlerAddress: "0x1aD9dE2c6F91302489f3e6b562d844D05441C1B4",
+      bridgeAddress: "0xF811AB52f26FF9B68b890f36a6BabB0C47e924df",
+      erc20HandlerAddress: "0x2fE6E7BCd8369CADD9B6b7619934B37b7D616852",
       rpcUrl: "http://beresheet1.edgewa.re:9933",
       type: "Ethereum",
       nativeTokenSymbol: "testEDG",
       tokens: [
         {
-          address: "0x468C224ADb7837fC41049fCFe812019A54d94c06",
+          address: "0x6E885aBda5567F3e8b1D8Dc9BbD1Bdf73b85FE6D",
+          name: "USDC Coin (bridged)",
+          symbol: "USDC",
           imageUri: USDCIcon,
           resourceId:
             "0x000000000000000000000000000000c76ebe4a02bbc34786d860b355f5a5ce00",
