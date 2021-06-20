@@ -67,7 +67,7 @@ export const chainbridgeConfig: ChainbridgeConfig = {
     },
     {
       chainId: 1,
-      networkId: 2021,
+      networkId: 2022,
       name: "Beresheet",
       decimals: 18,
       bridgeAddress: "0x05df5B40D6806f4c9A933e77b390AD7Bd373aDd4",
